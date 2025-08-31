@@ -15,7 +15,7 @@ interface PredictionResult {
 }
 
 const Dashboard = () => {
-  const BASE_URL = 'http://localhost:8000'; // Update this to your FastAPI server URL
+  const BASE_URL = 'http://localhost:8000'; 
   
   const [health, setHealth] = useState<HealthStatus | null>(null);
   const [currentModel, setCurrentModel] = useState('lgbm');
