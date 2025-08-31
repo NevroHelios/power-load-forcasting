@@ -4,22 +4,30 @@ import pickle
 from typing import Literal
 from contextlib import asynccontextmanager
 import os
+import logging
 from models import SetModel, LoadFeatures
 
 
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "models")
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 def load_model(name: Literal['xgboost', 'lgbm'] = 'lgbm'):
     model_name = name or os.getenv("MODEL_NAME", name)
+    model_path = os.path.join(MODEL_DIR, f"{model_name}_model.pkl")
     try:
-        with open(os.path.join(MODEL_DIR, f"{model_name}_model.pkl"), "rb") as f:
+        with open(model_path, "rb") as f:
             model = pickle.load(f)
         app.state.model = model
         app.state.model_name = model_name
         return model
     except FileNotFoundError:
-        print("ERROR: model not found")
-        print(f"GIVEN file name: {name}")
+        logger.error("Model not found")
+        logger.error(f"GIVEN file name: {name}")
+    except Exception as e:
+        logger.error(f"Error loading model: {model_name}")
+        logger.error(e)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
