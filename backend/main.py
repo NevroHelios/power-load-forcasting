@@ -31,7 +31,8 @@ async def lifespan(app: FastAPI):
 
 ## fastapi configs
 origins = [
-    "http://localhost:3000"
+    "http://localhost:3000",
+    "https://power-load-forcasting.vercel.app/"
 ]
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(
