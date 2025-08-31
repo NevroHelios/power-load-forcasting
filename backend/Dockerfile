@@ -1,16 +1,13 @@
 FROM python:3.12-slim
 
-# Install uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
-
 WORKDIR /app
 
-COPY pyproject.toml uv.lock ./
+COPY requirements.txt ./
 
-RUN uv sync --frozen --no-cache
+RUN pip install -r requirements.txt
 
 COPY . .
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "uv run fastapi run main.py --host 0.0.0.0 --port ${PORT:-8080}"]
+CMD ["fastapi run main.py --host 0.0.0.0 --port ${PORT:-8080}"]
