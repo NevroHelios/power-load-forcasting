@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend - Next.js Dashboard
 
-## Getting Started
+This is the frontend dashboard for the Power Load Forecasting project, built with Next.js and Tailwind CSS. It provides an interactive UI for model predictions, health monitoring, and data visualization.
 
-First, run the development server:
+## Features
+- Real-time model predictions with probability charts
+- Model switching (LightGBM/XGBoost)
+- Prediction history with line charts
+- Responsive design with dark theme
+- Integrates with FastAPI backend for inference
 
+## Prerequisites
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install next react react-dom recharts lucide-react
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Getting Started
+1. Ensure the backend is running at `http://localhost:8080` (or update `BASE_URL` in `app/page.tsx`).
+2. Run the development server:
+```bash
+npm run dev
+```
+3. Open [http://localhost:3000](http://localhost:3000) to view the dashboard.
+ 
+ Note: if running `backend` locally as well make sure to change the `BASE_URL` in `page.tsx`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Building for Production
+```bash
+npm run build
+npm start
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Structure
+- `app/page.tsx`: Main dashboard component with forms, charts, and API calls.
+- `app/layout.tsx`: Root layout with metadata and fonts.
+- `app/globals.css`: Tailwind CSS imports and custom styles.
+
+## Deployment
+Deploy to Vercel or similar platforms. Update CORS origins in the backend for production URLs.
 
 ## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Recharts for Data Visualization](https://recharts.org/)
+- [Tailwind CSS](https://tailwindcss.com/)

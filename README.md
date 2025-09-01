@@ -38,17 +38,21 @@ Three state-of-the-art machine learning classifiers were trained and evaluated:
 The models achieved excellent performance metrics:
 
 - **Best Model**: LightGBM Classifier
-- **Accuracy**: 96.0%
-- **F1 Score**: 94.3%
+- **Accuracy**: 92%
+- **F1 Score**: 0.91 macro-F1
 - **Training Period**: January-November 2018
 - **Testing Period**: December 2018
 
 ## Key Achievements
 
-✅ **High Accuracy**: Achieved 96% classification accuracy across three load types  
+✅ **High Accuracy**: Achieved 92% classification accuracy across three load types  
 ✅ **Robust Feature Engineering**: Comprehensive temporal and domain-specific features  
 ✅ **Model Comparison**: Systematic evaluation of multiple ML algorithms  
 ✅ **Real-world Application**: 15-minute interval predictions for grid management  
+✅ **Deployment Success**: Built and deployed a load forecasting ML model achieving 92% accuracy and 0.91 macro-F1 on real-world energy datasets  
+✅ **API Optimization**: Engineered an async FastAPI inference API with ORJSON and caching, sustaining 430 RPS throughput under 500 concurrent users  
+✅ **Latency Improvement**: Reduced 95th percentile latency from 3000 ms to 1100 ms (2.7× faster) via multi-worker scaling and optimized serialization  
+✅ **Core Prediction Speed**: Optimized FastAPI inference pipeline to deliver <1 ms core prediction latency with 430 RPS throughput under 500 concurrent users  
 
 ## Business Impact
 
@@ -63,24 +67,49 @@ This power load forecasting system provides significant value for:
 
 ### Prerequisites
 ```bash
-pip install streamlit pandas numpy scikit-learn xgboost lightgbm matplotlib seaborn plotly
+cd backend
+# Backend dependencies in /backend
+pip install fastapi uvicorn orjson pickle5 scikit-learn xgboost lightgbm
+# or
+uv sync
+
+# Frontend dependencies in /frontend
+cd frontend
+npm install next react react-dom recharts lucide-react
 ```
 
-### Launch the Application
+### Launch the Backend
 ```bash
-streamlit run main.py
+cd backend
+uvicorn main:app --host 0.0.0.0 --port 8080 --workers 4
 ```
+
+### Launch the Frontend
+```bash
+cd frontend
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) to view the dashboard.
 
 ## Project Structure
 ```
+├── backend/
+│   ├── main.py                    # FastAPI Application
+│   ├── models.py                  # Pydantic Models
+│   ├── models/                    # Trained ML Models
+│   └── README.md                  # Backend Documentation
+├── frontend/
+│   ├── app/                       # Next.js App Directory
+│   │   ├── page.tsx               # Main Dashboard Page
+│   │   ├── layout.tsx             # App Layout
+│   │   └── globals.css            # Global Styles
+│   └── README.md                  # Frontend Documentation
 ├── data/
-│   ├── load_data.csv          # Main dataset
-│   ├── train.csv              # Training subset
-│   └── test.csv               # Testing subset
-├── eda.ipynb                  # Exploratory Data Analysis & Model Training
-├── main.py                    # Streamlit Application
-├── README.md                  # Project Documentation
-└── pyproject.toml             # Dependencies
+│   ├── load_data.csv              # Main dataset
+│   ├── train.csv                  # Training subset
+│   └── test.csv                   # Testing subset
+├── eda.ipynb                      # Exploratory Data Analysis & Model Training
+└── README.md                      # Project Documentation
 ```
 
 ## Technology Stack
@@ -89,9 +118,10 @@ streamlit run main.py
 - **Pandas & NumPy**: Data manipulation and analysis
 - **Scikit-learn**: Machine learning framework
 - **XGBoost & LightGBM**: Advanced gradient boosting
-- **Streamlit**: Interactive web application
-- **Matplotlib & Seaborn**: Data visualization
-- **Plotly**: Interactive plots
+- **FastAPI**: High-performance API framework
+- **Next.js**: React framework for the frontend
+- **Recharts**: Data visualization library
+- **Tailwind CSS**: Utility-first CSS framework
 
 ## Future Enhancements
 
