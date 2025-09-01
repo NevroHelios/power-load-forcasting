@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import pickle
+from fastapi.responses import ORJSONResponse
 from typing import Literal
 from contextlib import asynccontextmanager
 import os
@@ -19,6 +20,7 @@ def load_model(name: Literal['xgboost', 'lgbm'] = 'lgbm'):
     try:
         with open(model_path, "rb") as f:
             model = pickle.load(f)
+        app.state.model_cache[model_name] = model
         app.state.model = model
         app.state.model_name = model_name
         return model
@@ -31,6 +33,7 @@ def load_model(name: Literal['xgboost', 'lgbm'] = 'lgbm'):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    app.state.model_cache = {}
     load_model(name='lgbm')
     
     yield
@@ -45,7 +48,7 @@ origins = [
     "https://power-load-forcasting-git-main-nevrohelios-projects.vercel.app",
     "https://power-load-forcasting-m0jbzmsln-nevrohelios-projects.vercel.app"
 ]
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, default_response_class=ORJSONResponse)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -65,7 +68,11 @@ async def get_health():
 @app.post("/set-model")
 async def set_model(model: SetModel):
     model_name = model.name
-    load_model(model_name)
+    if model_name in app.state.model_cache:
+        app.state.model = app.state.model_cache[model_name]
+        app.state.model_name = model_name
+    else:
+        load_model(model_name)
     return {"status": "model set", "model": model_name}
 
 
@@ -77,9 +84,9 @@ async def predict(features: LoadFeatures):
     
     # sklearn expects [n_samples, n_features]
     input_data = [features.get_features]
-    
+
     pred = model.predict(input_data)[0]
-    
+
     # do predict_proba (tested on lgbm & xgboost)
     if hasattr(model, "predict_proba"):
         proba = model.predict_proba(input_data)[0].tolist()

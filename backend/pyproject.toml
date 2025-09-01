@@ -5,13 +5,15 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "fastapi[standard]>=0.116.1",
+    "fastapi>=0.116.1",
     "holidays>=0.79",
     "ipykernel>=6.30.0",
     "jupyterlab>=4.4.5",
     "lightgbm>=4.6.0",
+    "locust>=2.39.1",
     "matplotlib>=3.10.5",
     "numpy==2.2.*",
+    "orjson>=3.11.3",
     "pandas>=2.3.1",
     "plotly>=6.3.0",
     "scikit-learn>=1.7.1",
