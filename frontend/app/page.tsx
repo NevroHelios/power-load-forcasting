@@ -16,6 +16,7 @@ interface PredictionResult {
 
 const Dashboard = () => {
   const BASE_URL = 'https://fastapi-ml-app-309739342275.europe-west1.run.app'; 
+  // const BASE_URL = "http://localhost:8080";
   
   const [health, setHealth] = useState<HealthStatus | null>(null);
   const [currentModel, setCurrentModel] = useState('lgbm');
@@ -182,11 +183,12 @@ const Dashboard = () => {
 
   // Performance metrics
   const metrics = [
-    { label: 'F1 Score', value: '94.3%', icon: Target, color: 'text-green-500' },
-    { label: 'Accuracy', value: '96.0%', icon: CheckCircle, color: 'text-blue-500' },
-    { label: 'Latency', value: '45ms', icon: Clock, color: 'text-purple-500' },
-    { label: 'Throughput', value: '1.2k/min', icon: TrendingUp, color: 'text-orange-500' }
+    { label: 'F1 Score', value: '94%', icon: Target, color: 'text-green-500' },
+    { label: 'Accuracy', value: '92%', icon: CheckCircle, color: 'text-blue-500' },
+    { label: 'Latency', value: '572ms avg', icon: Clock, color: 'text-purple-500' },
+    { label: 'Throughput', value: '25k/min', icon: TrendingUp, color: 'text-orange-500' }
   ];
+
 
   // Chart data
   const pieData = prediction?.probabilities ? [
