@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM astral/uv:python3.12-bookworm-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgomp1 \
@@ -6,12 +6,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-COPY requirements.txt ./
+# COPY requirements.txt ./
+COPY pyproject.toml uv.lock ./
 
-RUN pip install -r requirements.txt
+# RUN pip install -r requirements.txt
+RUN uv sync
 
 COPY . .
 
 EXPOSE 8080
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
