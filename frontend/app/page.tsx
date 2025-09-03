@@ -22,7 +22,8 @@ const Dashboard = () => {
   const [currentModel, setCurrentModel] = useState('lgbm');
   const [prediction, setPrediction] = useState<PredictionResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const [predictionHistory, setPredictionHistory] = useState<PredictionResult[]>([]);
+  // change history typing to accept the entries we push
+  const [predictionHistory, setPredictionHistory] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   // Form state for prediction
@@ -36,6 +37,96 @@ const Dashboard = () => {
     Leading_Current_Power_Factor: 0.0,
     NSM: 25.0
   });
+
+  // New: examples + expandable state to show public-facing examples for Medium/Maximum loads
+  const [examplesExpanded, setExamplesExpanded] = useState(false);
+  // New: engineered features expandable
+  const [featuresExpanded, setFeaturesExpanded] = useState(false);
+
+  const examples = [
+    {
+      id: 'ex1',
+      label: 'Maximum_Load',
+      Date_Time: '02-01-2019 19:15',
+      Usage_kWh: 41.36,
+      Lagging_Current_Reactive_Power_kVarh: 15.206443850474841,
+      Leading_Current_Reactive_Power_kVarh: 0.43,
+      CO2_tCO2: 0.0,
+      Lagging_Current_Power_Factor: 98.81,
+      Leading_Current_Power_Factor: 99.99,
+      NSM: 69300.0
+    },
+    {
+      id: 'ex2',
+      label: 'Maximum_Load',
+      Date_Time: '02-01-2019 19:30',
+      Usage_kWh: 35.96,
+      Lagging_Current_Reactive_Power_kVarh: 2.52,
+      Leading_Current_Reactive_Power_kVarh: 1.37,
+      CO2_tCO2: 0.0,
+      Lagging_Current_Power_Factor: 99.76,
+      Leading_Current_Power_Factor: 99.93,
+      NSM: 138653.25999122107
+    },
+    {
+      id: 'ex3',
+      label: 'Medium_Load',
+      Date_Time: '02-01-2019 15:30',
+      Usage_kWh: 141.44,
+      Lagging_Current_Reactive_Power_kVarh: 62.57,
+      Leading_Current_Reactive_Power_kVarh: 0.0,
+      CO2_tCO2: 0.0,
+      Lagging_Current_Power_Factor: 91.45,
+      Leading_Current_Power_Factor: 100.0,
+      NSM: 55800.0
+    },
+    {
+      id: 'ex4',
+      label: 'Medium_Load',
+      Date_Time: '02-01-2019 15:45',
+      Usage_kWh: 116.53,
+      Lagging_Current_Reactive_Power_kVarh: 52.88,
+      Leading_Current_Reactive_Power_kVarh: 0.0,
+      CO2_tCO2: 0.0,
+      Lagging_Current_Power_Factor: 91.06,
+      Leading_Current_Power_Factor: 100.0,
+      NSM: 56700.0
+    }
+  ];
+
+  // New: list of engineered / model features (display labels only)
+  const engineeredFeatures: string[] = [
+    'Usage_kWh',
+    'Lagging_Current_Reactive.Power_kVarh',
+    'Leading_Current_Reactive_Power_kVarh',
+    'CO2(tCO2)',
+    'Lagging_Current_Power_Factor',
+    'Leading_Current_Power_Factor',
+    'weekday',
+    'dayofmonth',
+    'month_sin',
+    'month_cos',
+    'hour',
+    'hour_sin t/2',
+    'hour_cos t/2',
+    'hour_sin',
+    'hour_cos',
+    'hour_sin 2t',
+    'hour_cos 2t',
+    'hour_sin 3t',
+    'hour_cos 3t',
+    'hour_sin 4t',
+    'hour_cos 4t',
+    'dayofweek_sin',
+    'dayofweek_cos',
+    'total_reactive_power',
+    'power_factor_diff',
+    'reactive_usage_ratio',
+    'isHoliday',
+    'season',
+    'usage_hour_sin',
+    'usage_hour_cos'
+  ];
 
   // Helper function to convert datetime-local to MM-DD-YYYY HH:MM format
   const formatDateTimeForAPI = (datetimeLocal: string) => {
@@ -115,66 +206,95 @@ const Dashboard = () => {
     setLoading(false);
   };
 
-  const makePrediction = async () => {
+  const makePrediction = async (overrideData?: Partial<typeof formData>) => {
     setLoading(true);
     setError(null);
     try {
-      // Prepare features data - exclude Date_Time from get_features
+      // Use overrideData if provided (from examples) otherwise use current formData
+      const src = overrideData ? overrideData : formData;
       const featuresData = {
-        Date_Time: formData.Date_Time,
-        Usage_kWh: formData.Usage_kWh,
-        Lagging_Current_Reactive_Power_kVarh: formData.Lagging_Current_Reactive_Power_kVarh,
-        Leading_Current_Reactive_Power_kVarh: formData.Leading_Current_Reactive_Power_kVarh,
-        CO2_tCO2: formData.CO2_tCO2,
-        Lagging_Current_Power_Factor: formData.Lagging_Current_Power_Factor,
-        Leading_Current_Power_Factor: formData.Leading_Current_Power_Factor,
-        NSM: formData.NSM,
+        Date_Time: src.Date_Time,
+        Usage_kWh: Number(src.Usage_kWh),
+        Lagging_Current_Reactive_Power_kVarh: Number(src.Lagging_Current_Reactive_Power_kVarh),
+        Leading_Current_Reactive_Power_kVarh: Number(src.Leading_Current_Reactive_Power_kVarh),
+        CO2_tCO2: Number(src.CO2_tCO2),
+        Lagging_Current_Power_Factor: Number(src.Lagging_Current_Power_Factor),
+        Leading_Current_Power_Factor: Number(src.Leading_Current_Power_Factor),
+        NSM: Number(src.NSM),
         get_features: [
-          formData.Usage_kWh,
-          formData.Lagging_Current_Reactive_Power_kVarh,
-          formData.Leading_Current_Reactive_Power_kVarh,
-          formData.CO2_tCO2,
-          formData.Lagging_Current_Power_Factor,
-          formData.Leading_Current_Power_Factor,
-          formData.NSM
+          Number(src.Usage_kWh),
+          Number(src.Lagging_Current_Reactive_Power_kVarh),
+          Number(src.Leading_Current_Reactive_Power_kVarh),
+          Number(src.CO2_tCO2),
+          Number(src.Lagging_Current_Power_Factor),
+          Number(src.Leading_Current_Power_Factor),
+          Number(src.NSM)
         ]
       };
-
-      const response = await fetch(`${BASE_URL}/predict`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(featuresData)
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      if (data.error) {
-        throw new Error(data.error);
-      }
-      
-      setPrediction(data);
-      
-      // Add to history
+ 
+       const response = await fetch(`${BASE_URL}/predict`, {
+         method: 'POST',
+         headers: {
+           'Content-Type': 'application/json',
+         },
+         body: JSON.stringify(featuresData)
+       });
+       
+       if (!response.ok) {
+         throw new Error(`HTTP error! status: ${response.status}`);
+       }
+       
+       const data = await response.json();
+       
+       if (data.error) {
+         throw new Error(data.error);
+       }
+       
+       setPrediction(data);
+       
+       // Add to history
       const newEntry = {
         timestamp: new Date().toLocaleTimeString(),
         prediction: data.prediction,
         confidence: data.probabilities ? Math.max(...data.probabilities) * 100 : 0,
-        usage: formData.Usage_kWh
+        usage: Number(src.Usage_kWh),
+        sourceDateTime: src.Date_Time
       };
       setPredictionHistory(prev => [...prev.slice(-9), newEntry]);
-      
-    } catch (error: unknown) {
-      let _error = error as Error;
-      console.error('Error making prediction:', _error);
-      setError(`Prediction failed: ${_error.message}`);
+       
+     } catch (error: unknown) {
+       let _error = error as Error;
+       console.error('Error making prediction:', _error);
+       setError(`Prediction failed: ${_error.message}`);
+     }
+     setLoading(false);
+   };
+  
+  // Helper to apply an example into the form (and optionally run prediction)
+  const applyExample = (ex: any, runPredict = false) => {
+    setFormData({
+      Date_Time: ex.Date_Time,
+      Usage_kWh: ex.Usage_kWh,
+      Lagging_Current_Reactive_Power_kVarh: ex.Lagging_Current_Reactive_Power_kVarh,
+      Leading_Current_Reactive_Power_kVarh: ex.Leading_Current_Reactive_Power_kVarh,
+      CO2_tCO2: ex.CO2_tCO2,
+      Lagging_Current_Power_Factor: ex.Lagging_Current_Power_Factor,
+      Leading_Current_Power_Factor: ex.Leading_Current_Power_Factor,
+      NSM: ex.NSM
+    });
+    if (runPredict) {
+      // call prediction with the example payload directly to avoid stale state issues
+      makePrediction({
+        Date_Time: ex.Date_Time,
+        Usage_kWh: ex.Usage_kWh,
+        Lagging_Current_Reactive_Power_kVarh: ex.Lagging_Current_Reactive_Power_kVarh,
+        Leading_Current_Reactive_Power_kVarh: ex.Leading_Current_Reactive_Power_kVarh,
+        CO2_tCO2: ex.CO2_tCO2,
+        Lagging_Current_Power_Factor: ex.Lagging_Current_Power_Factor,
+        Leading_Current_Power_Factor: ex.Leading_Current_Power_Factor,
+        NSM: ex.NSM
+      });
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -346,7 +466,7 @@ const Dashboard = () => {
                     />
                   </div>
                   <button
-                    onClick={makePrediction}
+                    onClick={() => makePrediction()}
                     disabled={loading || health?.status !== 'healthy'}
                     className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 transition-all duration-200 py-2 sm:py-3 px-3 sm:px-4 rounded-lg font-medium text-sm sm:text-base"
                   >
@@ -504,7 +624,7 @@ const Dashboard = () => {
                 
                 <div className="sm:col-span-2 lg:col-span-3">
                   <button
-                    onClick={makePrediction}
+                    onClick={() => makePrediction()}
                     disabled={loading || health?.status !== 'healthy'}
                     className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 disabled:opacity-50 transition-all duration-200 py-2 sm:py-3 px-3 sm:px-4 rounded-lg font-medium text-sm sm:text-base"
                   >
@@ -512,6 +632,115 @@ const Dashboard = () => {
                   </button>
                 </div>
               </div>
+            </div>
+
+            {/* New: Public-facing expandable examples explaining Medium / Maximum load */}
+            <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-xl p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-orange-400" />
+                  What produces Medium & Maximum Load
+                </h3>
+                <button
+                  onClick={() => setExamplesExpanded(!examplesExpanded)}
+                  className="text-xs bg-slate-700/40 px-2 py-1 rounded-md"
+                >
+                  {examplesExpanded ? 'Hide examples' : 'Show examples'}
+                </button>
+              </div>
+
+              {examplesExpanded && (
+                <div className="space-y-3">
+                  <p className="text-slate-400 text-sm">
+                    These real examples show feature combinations that produced Medium or Maximum load in the dataset.
+                    Click "Apply" to load values into the form or "Apply & Predict" to run the model on the example.
+                  </p>
+
+                  {/* Group by label */}
+                  {['Medium_Load', 'Maximum_Load'].map((label) => (
+                    <div key={label} className="pt-2">
+                      <div className="text-xs text-slate-300 font-semibold mb-2">{label.replace('_', ' ')}</div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {examples.filter(e => e.label === label).map((ex) => (
+                          <div key={ex.id} className="p-3 bg-slate-700/30 rounded-lg">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <div className="text-sm font-medium">{ex.Date_Time}</div>
+                                <div className="text-xs text-slate-400">Usage: <span className="font-semibold text-white">{ex.Usage_kWh}</span> kWh</div>
+                                <div className="text-xs text-slate-400">Lagging Reactive: <span className="font-semibold text-white">{ex.Lagging_Current_Reactive_Power_kVarh}</span></div>
+                                <div className="text-xs text-slate-400">Lagging PF: <span className="font-semibold text-white">{ex.Lagging_Current_Power_Factor}</span>%</div>
+                                <div className="text-xs text-slate-400">NSM: <span className="font-semibold text-white">{ex.NSM}</span></div>
+                              </div>
+                              <div className="flex flex-col gap-2">
+                                <button
+                                  onClick={() => applyExample(ex, false)}
+                                  className="text-xs bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded-md"
+                                >
+                                  Apply
+                                </button>
+                                <button
+                                  onClick={() => applyExample(ex, true)}
+                                  className="text-xs bg-green-600 hover:bg-green-700 px-3 py-1 rounded-md"
+                                >
+                                  Apply & Predict
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* New: Engineered Feature Glossary */}
+            <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-xl p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-blue-400" />
+                  Feature Set Used by Model
+                </h3>
+                <button
+                  onClick={() => setFeaturesExpanded(!featuresExpanded)}
+                  className="text-xs bg-slate-700/40 px-2 py-1 rounded-md"
+                >
+                  {featuresExpanded ? 'Hide' : 'Show'}
+                </button>
+              </div>
+              {featuresExpanded && (
+                <div className="space-y-4">
+                  <p className="text-slate-400 text-sm">
+                    These raw + engineered features are fed into the model (cyclical encodings, ratios, seasonal & holiday flags).
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {engineeredFeatures.map(f => (
+                      <span
+                        key={f}
+                        className="text-[10px] sm:text-xs bg-slate-700/50 border border-slate-600 px-2 py-1 rounded-md font-mono text-slate-200"
+                        title={f.includes('sin') || f.includes('cos') ? 'Cyclical encoding' : f}
+                      >
+                        {f}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px] text-slate-400">
+                    <div className="space-y-1">
+                      <div><span className="text-slate-200">*_sin / *_cos:</span> cyclical transforms (periodic signals)</div>
+                      <div><span className="text-slate-200">total_reactive_power:</span> derived reactive components sum</div>
+                      <div><span className="text-slate-200">power_factor_diff:</span> lagging vs leading PF difference</div>
+                      <div><span className="text-slate-200">reactive_usage_ratio:</span> reactive energy vs usage ratio</div>
+                    </div>
+                    <div className="space-y-1">
+                      <div><span className="text-slate-200">isHoliday:</span> binary holiday flag</div>
+                      <div><span className="text-slate-200">season:</span> encoded seasonal bucket</div>
+                      <div><span className="text-slate-200">usage_hour_sin / cos:</span> usage-weighted hour signal</div>
+                      <div><span className="text-slate-200">weekday / dayofmonth:</span> calendar context</div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Prediction History Chart */}
