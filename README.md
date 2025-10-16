@@ -91,6 +91,21 @@ npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) to view the dashboard.
 
+### Run with Docker Compose (production-like)
+
+Build and run both services (backend + frontend) together with Docker Compose. From the project root:
+
+```bash
+docker compose up --build
+```
+
+This will:
+- Build the backend from `./backend` and expose it on localhost:8080
+- Build the frontend from `./frontend` and expose it on localhost:3000
+
+If you want to change the default model used by the backend, set the `MODEL_NAME` environment variable for the `backend` service in `docker-compose.yml` (default: `lgbm`).
+
+
 ## Project Structure
 ```
 ├── backend/

@@ -15,7 +15,7 @@ interface PredictionResult {
 }
 
 const Dashboard = () => {
-  const BASE_URL = 'https://fastapi-ml-app-309739342275.europe-west1.run.app'; 
+  const BASE_URL = (process.env.NEXT_PUBLIC_API_URL as string) || 'http://localhost:8080';
   // const BASE_URL = "http://localhost:8080";
   
   const [health, setHealth] = useState<HealthStatus | null>(null);
